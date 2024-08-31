@@ -7,6 +7,7 @@ export const Dashboard: React.FC = () => {
 	const [candidate, setCandidate] = useState<Candidate>();
 
 	const reconcile = useCallback(({ data }: { data: Candidate }) => {
+		const reference = getReferenceData();
 		const verifications = data.verifications.map((verification) => {
 			/**
 			 * This is the fix for this bug.
@@ -16,9 +17,32 @@ export const Dashboard: React.FC = () => {
 			 *       reference type variables pointing to the same reference, these references will be kept.
 			 *
 			 * Fix: Create a new object for each verification and copy the checks from the reference data.
+			 * Two options to fix this bug:
+			 *   1. Create a new object for each verification.
+			 *   2. Create a new object for each check using spread operator.
 			 */
-			const reference = getReferenceData();
+			// Fix 1.) this will create a new object for each verification.
+			// const reference = getReferenceData();
+			// return {
+			// 	...verification,
+			// 	eligibility: {
+			// 		checks: reference.eligibility.checks.map((condition) => {
+			// 			const existing = verification.eligibility.checks.find(
+			// 				(c) => c.name === condition.name,
+			// 			);
+			// 			if (existing) {
+			// 				return existing;
+			// 			}
+			// 			return condition;
+			// 		}),
+			// 	},
+			// };
 
+			// Fix 2.) this will create a new object for each check using spread operator.
+			// ******
+			// Proposed fix because it don't need to create different getReferenceData() object for each verification.
+			// only create a new condition object for each check using spread operator.
+			// ******
 			return {
 				...verification,
 				eligibility: {
@@ -29,7 +53,7 @@ export const Dashboard: React.FC = () => {
 						if (existing) {
 							return existing;
 						}
-						return condition;
+						return { ...condition };
 					}),
 				},
 			};
